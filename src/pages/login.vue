@@ -55,7 +55,7 @@ export default {
         this.$router.push('/main')
       } else {
         this.$q.notify({
-            message: 'Nao foi possivel logar: matrícula ou senha inválidos',
+            message: 'Não foi possível logar: matrícula ou senha inválidos',
             color: 'negative',
             position: 'bottom'
           })

@@ -22,6 +22,7 @@ div
 }
 .inp-col{
   max-width: 1000px;
+  min-width: 370px;
 }
 </style>
 <script>
@@ -68,13 +69,24 @@ export default {
         classes: 'my-class',
         style: 'width: 500px'
       },
+      {
+        name: 'status',
+        required: true,
+        label: 'Status',
+        align: 'left',
+        field: 'status',
+        sortable: true,
+        classes: 'my-class',
+        style: 'width: 500px'
+      },
     ],
     tableData: [
       {
         code: '1',
         patient: '1 - Benedito',
         medic: '1 - Diego',
-        fase: 'ECG - 00:03:50'
+        fase: 'ECG - 00:03:50',
+        status: 'FINALIZADO'
       },
       
     ]

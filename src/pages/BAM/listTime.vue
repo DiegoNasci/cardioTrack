@@ -33,11 +33,12 @@ div
           center
             div.bg-grey.fase.q-pa-sm
               |{{ bam.fase }}
-    q-table.q-mt-xl.q-mr-sm.q-ml-sm.q-mb-md.cad-pat(:data="tableData" :columns="columns" row-key="code")
+    q-table.q-mt-xl.q-mr-sm.q-ml-sm.q-mb-md.cad-pat(:data="tableData" :columns="columns" row-key="code" :loading="loading")
       // q-tr(slot="body" slot-scope="props" :props="props")
       q-td(slot="body-cell-action" slot-scope="props" :props="props")
-        q-btn(v-if="!check(props.row.code)" size="sm" color="green" @click="time(props.row.code, true)" label="Iniciar")
-        q-btn(v-if="check(props.row.code)" size="sm" color="red" @click="time(props.row.code, false)" label="Parar")
+        q-btn(v-if="check(props.row.code) === 'Iniciar'" size="sm" :color="color[props.row.code]" @click="time(props.row.code, 'parar')" :label="label[props.row.code]")
+        q-btn(v-if="check(props.row.code) === 'Parar'" size="sm" :color="color[props.row.code]" @click="time(props.row.code, 'finalizado')" :label="label[props.row.code]")
+        q-btn(v-if="check(props.row.code) === 'Finalizado'" size="sm" :color="color[props.row.code]" @click="time(props.row.code, 'finalizado')" :label="label[props.row.code]")
         
         
 
@@ -86,9 +87,9 @@ div
 export default {
   data () {
     return {
-      examCode: [],
       label: [],
       color: [],
+      loading: false,
       bam: {
           code: '1',
           admission: '05/10/2018 - 10:15',
@@ -162,36 +163,35 @@ export default {
       ],
       tableData: [
         {
-          code: '1',
+          code: 1,
           name: 'ECG',
           inicio: '14:35:12',
           fim: '14:39:02',
-          total: '00:03:50',
-          action: 'FINALIZADO'
+          total: '00:03:50'
         },
         {
-          code: '2',
+          code: 2,
           name: 'Medicação',
           inicio: '00:00:00',
           fim: '00:00:00',
           total: '00:00:00'
         },
         {
-          code: '3',
+          code: 3,
           name: 'Trombólise',
           inicio: '00:00:00',
           fim: '00:00:00',
           total: '00:00:00'
         },
         {
-          code: '4',
+          code: 4,
           name: 'Internação',
           inicio: '00:00:00',
           fim: '00:00:00',
           total: '00:00:00'
         },
         {
-          code: '5',
+          code: 5,
           name: 'Revascularização',
           inicio: '00:00:00',
           fim: '00:00:00',
@@ -204,61 +204,79 @@ export default {
   },
   methods: {
     check (code) {
-      let valor = false
-      let exame = this.examCode.find(item => item.code === code)
-      if (exame) {
-        valor = exame.iniciado
+      this.loading = false
+      if (this.label[code] === undefined ){
+        this.label[code] = 'Iniciar'
+        this.color[code] = 'green'
       }
-      return valor
-      // this.label[code] = 'Iniciar'
-      // this.color[code] = 'green'
-      // console.log('this.color[' + code + '] ' + this.color[code])
-      // return true
+      console.log('this.color[' + code + '] ' + this.color[code])
+      console.log('this.label[' + code + '] ' + this.label[code])
+      return this.label[code]
     },
-    time (code, valor) {
-      let exame = this.examCode.find(item => item.code === code)
-      if (exame) {
-        console.log('alterou')
-        exame.iniciado = valor
-      } else {
-        console.log('criou')
-        this.examCode.push({
-          code: code
-        })
+    time (code, label) {
+      this.label[code] = label
+      console.log('this.label[' + code + '] ' + this.label[code])
+      if (this.label[code] === 'parar'){
+        this.label[code] ='Parar',
+        this.color[code] = 'red'
+        this.loading = true
+        // console.log(this.color[code] + code)
+      } else if (this.label[code] === 'finalizado'){
+        this.label[code] ='Finalizado',
+        this.color[code] = 'black'
+        this.loading = true
+        // console.log(this.color[code] + code)
       }
-      // if (this.label[code] === 'Iniciar'){
-      //   this.label[code] ='Parar',
-      //   this.color[code] = 'red'
-      //   console.log(this.color[code] + code)
-      // } else {
-      //   this.label[code] ='Finalizado',
-      //   this.color[code] = 'black'
-      //   console.log(this.color[code] + code)
-      // }
-      
     },
     alta (){
-
+      this.$q.dialog({
+        title: 'Alta',
+        message: 'Deseja realmente finalizar o BAM?',
+        ok: 'Sim',
+        cancel: 'Não'
+      }).then(() => {
+       this.$q.notify({
+          message:'BAM finalizado com sucesso!',
+          color: 'positive',
+          position: 'bottom'
+        })
+        this.$router.push('bamsList')
+      }).catch(() => {
+      })
     },
     obito (){
-
+      this.$q.dialog({
+        title: 'Óbito',
+        message: 'Deseja realmente finalizar o BAM?',
+        ok: 'Sim',
+        cancel: 'Não'
+      }).then(() => {
+        this.$q.notify({
+          message:'BAM finalizado com sucesso!',
+          color: 'positive',
+          position: 'bottom'
+        })
+        //this.$router.push('bamsList')
+      }).catch(() => {
+        
+      })
     },
-    iniciar (code, valor) {
-      console.log('valor: ' + valor)
-      this.cronoCode[code] = valor
-      console.log('verificarAcao(props.row.code) ' + this.verificarAcao(code))
+    // iniciar (code, valor) {
+    //   console.log('valor: ' + valor)
+    //   this.cronoCode[code] = valor
+    //   console.log('verificarAcao(props.row.code) ' + this.verificarAcao(code))
       
-    },
-    verificarAcao (code) {
-      this.color[code] = 'green'
-      console.log('this.cronoCode[code]' + this.cronoCode[code])
-      if (this.cronoCode[code] == true){
-        this.colorG(code)
-      } else if (this.cronoCode[code] = 'red'){
-        this.cronoCode[code] = 'black'
-      }
-      return this.cronoCode[code]
-    }
+    // },
+    // verificarAcao (code) {
+    //   this.color[code] = 'green'
+    //   console.log('this.cronoCode[code]' + this.cronoCode[code])
+    //   if (this.cronoCode[code] == true){
+    //     this.colorG(code)
+    //   } else if (this.cronoCode[code] = 'red'){
+    //     this.cronoCode[code] = 'black'
+    //   }
+    //   return this.cronoCode[code]
+    // }
   }
 }
 </script>
